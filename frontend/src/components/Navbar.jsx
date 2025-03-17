@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { useRef } from 'react'
-import LogoutButton from './LogoutButton'
 import { useDispatch } from 'react-redux'
 import { logout } from '../redux/auth/authSlice'
 import { useLogoutMutation } from '../redux/api/userApiSlice'
@@ -12,12 +11,16 @@ import { toast } from 'react-toastify'
 
 const Navbar = () => {
     const navigate = useNavigate()
+
     const { userInfo } = useSelector((state) => (state.auth))
+
+    //mobile navbar
     const [dropdownVisible, setDropdownVisible] = useState(false)
-    const dropdownRef = useRef(null)
+    const dropdownRef = useRef(null)  // ref to dropdown menu element for outside clicks
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const mobileMenuRef = useRef(null)
-    const dispatch = useDispatch()
+    const mobileMenuRef = useRef(null) //ref to mobile menu element for outside clicks
+
+    const dispatch = useDispatch() 
     const [logoutApiCall] = useLogoutMutation()
 
     const toggleDropdown = () => {
@@ -38,8 +41,8 @@ const Navbar = () => {
             }
         }
 
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
+        document.addEventListener('mousedown', handleClickOutside)  // mousedown for faster response
+        return () => document.removeEventListener('mousedown', handleClickOutside) // cleanup for new event listeneer to work
     }, [])
 
     const LogoutHandler = async () => {
@@ -147,6 +150,7 @@ const Navbar = () => {
                                         {userInfo.data.user.userName}
                                     </span>
                                 </button>
+
                                 {dropdownVisible && (
                                     <div
                                         ref={dropdownRef}
@@ -190,22 +194,12 @@ const Navbar = () => {
                                         >
                                             Update Profile
                                         </button>
-                                        {/* <button
-                                            onClick={() => {
-                                                setDropdownVisible(false);
-                                                navigate('/dashboard');
-                                            }}
-                                            className="w-full text-left px-4 py-2 font-semibold text-white rounded transition duration-200 hover:bg-black hover:cursor-pointer"
-                                        >
-                                            Dashboard
-                                        </button> */}
                                         <button
                                             onClick={LogoutHandler}
                                             className="w-full text-left px-4 py-2 font-semibold text-white rounded transition duration-200 hover:bg-black hover:cursor-pointer"
                                         >
                                             Logout
                                         </button>
-                                        {/* <LogoutButton/> */}
                                     </div>
                                
                                     </div>

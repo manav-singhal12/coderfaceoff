@@ -1,4 +1,4 @@
-import { use, useState ,useEffect} from "react";
+import { use, useState, useEffect } from "react";
 import { useRegisterMutation } from "../redux/api/userApiSlice.js";
 import { useNavigate } from 'react-router-dom'
 import Loader from "../components/Loader.jsx";
@@ -12,13 +12,13 @@ function Register() {
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [walletKey, setwalletKey] = useState("");
+  // const [walletKey, setwalletKey] = useState("");
   const [image, setImage] = useState("");
-  const [skillInput, setSkillInput] = useState("");
 
   const [register, { isLoading, error }] = useRegisterMutation();
   const navigate = useNavigate()
-  const {userInfo} = useSelector((state)=>(state.auth))
+
+  const { userInfo } = useSelector((state) => (state.auth))
   useEffect(() => {
     if (userInfo) {
       navigate("/");
@@ -38,11 +38,11 @@ function Register() {
     formData.append("email", email);
     formData.append("password", password);
     // formData.append("walletKey", walletKey);
-    formData.append("avatar", image); // 'image' matches Multer field name
+    formData.append("avatar", image); 
 
 
     try {
-      const result = await register(formData).unwrap(); // Call RTK Query mutation
+      const result = await register(formData).unwrap(); 
       console.log("Response:", result);
       if (result) {
         toast.success("user register successFully! ✅");
@@ -77,7 +77,7 @@ function Register() {
     <div className="min-h-screen flex flex-col md:flex-row justify-center items-center gap-10 md:gap-20 p-4">
       <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-[#2b2b2b] rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-white mb-6 text-center">REGISTER</h2>
-  
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="fullname" className="block font-semibold text-white">Full Name</label>
@@ -92,7 +92,7 @@ function Register() {
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none border-gray-700 bg-black text-white"
             />
           </div>
-  
+
           <div>
             <label htmlFor="username" className="block font-semibold text-white">User Name</label>
             <input
@@ -106,7 +106,7 @@ function Register() {
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none border-gray-700 bg-black text-white"
             />
           </div>
-  
+
           <div>
             <label htmlFor="email" className="block font-semibold text-white">Email</label>
             <input
@@ -120,7 +120,7 @@ function Register() {
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none border-gray-700 bg-black text-white"
             />
           </div>
-  
+
           <div>
             <label htmlFor="password" className="block font-semibold text-white">Password</label>
             <input
@@ -134,7 +134,7 @@ function Register() {
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none border-gray-700 bg-black text-white"
             />
           </div>
-  
+
           <div>
             <label htmlFor="profilePicture" className="block font-semibold text-white">Profile Picture</label>
             <input
@@ -145,14 +145,14 @@ function Register() {
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none border-gray-700 bg-black text-white"
             />
           </div>
-  
+
           <p className="mt-4 text-white text-center">
             Already have an account?{' '}
             <Link to="/login" className="text-[#36a1b6] font-semibold hover:underline">
               Login
             </Link>
           </p>
-  
+
           <button
             type="submit"
             className="w-full p-3 hover:bg-[#2f8a9d] bg-[#36a1b6] text-white rounded-lg uppercase font-semibold transition"
@@ -160,12 +160,12 @@ function Register() {
             Register
           </button>
         </form>
-  
+
         {isLoading && <Loader />}
       </div>
     </div>
   );
-  
+
 };
 
 export default Register;

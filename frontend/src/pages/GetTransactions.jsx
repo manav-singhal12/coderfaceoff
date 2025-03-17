@@ -1,21 +1,25 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetPaymentsQuery } from "../redux/api/PaymentApiSlice";
 import { useGetAccountsQuery } from "../redux/api/WalletApiSlice";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
 import { Pie, Bar } from 'react-chartjs-2';
 import * as XLSX from "xlsx";
 import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 
 const GetTransaction = () => {
-    const {userInfo} = useSelector((state)=>(state.auth))
-     const navigate = useNavigate()
-     useEffect(() => {
-       if (!userInfo) {
-         navigate("/login");
-       }
-     }, [userInfo, navigate]);
+
+    const { userInfo } = useSelector((state) => (state.auth))
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!userInfo) {
+            navigate("/login");
+        }
+    }, [userInfo, navigate]);
+    
     const { data: paymentsData, error, isError, isLoading } = useGetPaymentsQuery();
     const {
         data: accountsData,
@@ -23,23 +27,20 @@ const GetTransaction = () => {
         isLoading: accountLoading
     } = useGetAccountsQuery();
 
-    // State management
     const [categoryFilter, setCategoryFilter] = useState('');
     const [amountFilter, setAmountFilter] = useState([0, 1000000]);
     const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
 
-    // Loading and error states
     if (isLoading || accountLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;
     if (accountError) return <div>Account Error: {accountError.message}</div>;
 
-    // Data processing
     const allAccounts = accountsData?.message || [];
     console.log(paymentsData)
     const allTransactions = paymentsData?.payments || [];
     const publicKeys = allAccounts.map(account => account.public_key);
 
-    // Filter transactions for all accounts
+    // another way for filtering transactions
     const filteredTransactions = allTransactions
         .filter(txn => publicKeys.includes(txn.sender_key))
         .filter(txn => {
@@ -54,7 +55,6 @@ const GetTransaction = () => {
         })
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Chart color generator
     const stringToColor = (str) => {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
@@ -63,7 +63,6 @@ const GetTransaction = () => {
         return `hsl(${hash % 360}, 70%, 50%)`;
     };
 
-    // Account-based data processing
     const accountSpendingData = allAccounts.reduce((acc, account) => {
         acc[account.public_key] = allTransactions
             .filter(txn => txn.sender_key === account.public_key)
@@ -71,21 +70,28 @@ const GetTransaction = () => {
         return acc;
     }, {});
 
-    // Category spending for all accounts
     const categorySpending = filteredTransactions.reduce((acc, txn) => {
         acc[txn.category] = (acc[txn.category] || 0) + txn.amount;
         return acc;
     }, {});
 
-    // Chart configurations
     const pieChartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { position: "bottom" } }
     };
 
-    // Account Spending Pie Chart
-    // Filter transactions based on selected filters (category and date)
+   
+    const pieChartData1 = {
+        labels: Object.keys(categorySpending),
+        datasets: [{
+            data: Object.values(categorySpending),
+            backgroundColor: Object.keys(categorySpending).map(stringToColor),
+            borderColor: '#ffffff',
+            borderWidth: 1
+        }]
+    };
+
     const filteredAccountTransactions = allTransactions.filter(txn => {
         const txnDate = new Date(txn.createdAt);
         return (
@@ -97,7 +103,6 @@ const GetTransaction = () => {
         );
     });
 
-    // Account-based filtered data processing
     const filteredAccountSpendingData = allAccounts.reduce((acc, account) => {
         acc[account.public_key] = filteredAccountTransactions
             .filter(txn => txn.sender_key === account.public_key)
@@ -105,39 +110,19 @@ const GetTransaction = () => {
         return acc;
     }, {});
 
-    // Remove accounts with zero spending after filtering
-    const finalAccountSpendingData = Object.fromEntries(
-        Object.entries(filteredAccountSpendingData).filter(([_, value]) => value > 0)
-    );
+    
 
-    // Updated Account Spending Pie Chart (pieChartData2)
     const pieChartData2 = {
-        labels: Object.keys(finalAccountSpendingData).map(label =>
+        labels: Object.keys(filteredAccountSpendingData).map(label =>
             label.length > 10 ? label.slice(0, 5) + "..." + label.slice(-5) : label
         ),
         datasets: [{
-            data: Object.values(finalAccountSpendingData),
-            backgroundColor: Object.keys(finalAccountSpendingData).map(stringToColor),
+            data: Object.values(filteredAccountSpendingData),
+            backgroundColor: Object.keys(filteredAccountSpendingData).map(stringToColor),
             borderColor: '#ffffff',
             borderWidth: 1
         }]
-    };
-
-
-    // Category Spending Pie Chart
-    const pieChartData1 = {
-        labels: Object.keys(categorySpending),
-        datasets: [{
-            data: Object.values(categorySpending),
-            backgroundColor: Object.keys(categorySpending).map(stringToColor),
-            borderColor: '#ffffff',
-            borderWidth: 1
-        }]
-    };
-
-
-
-    // Excel download handler
+    }
     const downloadExcel = () => {
         if (filteredTransactions.length === 0) {
             alert("No transactions to download!");
@@ -165,84 +150,81 @@ const GetTransaction = () => {
             <div className="bg-[#36a1b6] flex justify-center p-2 text-lg md:text-xl rounded-lg mb-6 md:mb-10">
                 <h2><strong>Transactions for all the accounts</strong></h2>
             </div>
-    
+
             {/* Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 my-6">
-        <span className='bg-[#36a1b6] p-2 rounded-xl text-center md:text-left'>Apply Filters</span>
-        <div className="flex flex-col md:flex-row gap-2">
-            <label htmlFor="category" className="bg-white text-black p-2 rounded-xl">Category:</label>
-            <input
-                type="text"
-                id="category"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                placeholder="Search by category"
-                className="p-2 rounded-md border border-white w-full md:w-auto"
-            />
-        </div>
-        <div className="flex flex-col md:flex-row gap-2">
-            <label htmlFor="amount" className="bg-white text-black p-2 rounded-xl">Amount:</label>
-            <input
-                type="number"
-                id="minAmount"
-                value={amountFilter[0]}
-                onChange={(e) => setAmountFilter([+e.target.value, amountFilter[1]])}
-                className="p-2 rounded-md border border-white w-full md:w-auto"
-                placeholder="Min Amount"
-            />
-            <input
-                type="number"
-                id="maxAmount"
-                value={amountFilter[1]}
-                onChange={(e) => setAmountFilter([amountFilter[0], +e.target.value])}
-                className="p-2 rounded-md border border-white w-full md:w-auto"
-                placeholder="Max Amount"
-            />
-        </div>
-        <div className="flex flex-col md:flex-row gap-2">
-            <label htmlFor="date" className="bg-white text-black p-2 rounded-xl">Date Range:</label>
-            <input
-                type="date"
-                id="startDate"
-                value={dateFilter.start}
-                onChange={(e) => setDateFilter({ ...dateFilter, start: e.target.value })}
-                className="p-2 rounded-md border border-white w-full md:w-auto"
-            />
-            <input
-                type="date"
-                id="endDate"
-                value={dateFilter.end}
-                onChange={(e) => setDateFilter({ ...dateFilter, end: e.target.value })}
-                className="p-2 rounded-md border border-white w-full md:w-auto"
-            />
-        </div>
-    </div>
-    
-            {/* Charts Section */}
-             <div className="flex flex-col md:flex-row justify-between gap-6 sm:flex-wrap">
-                    {filteredTransactions?.length > 0 && (
-                        <div className="flex-1 h-[300px] sm:h-[400px] bg-[#2b2b2b] p-6 rounded-lg">
-                            <h3 className="text-center text-lg font-semibold">Amount Distribution by Category</h3>
-                            <Pie data={pieChartData1} options={pieChartOptions} />
-                        </div>
-                    )}
-                    {filteredTransactions?.length > 0 && (
-                        <div className="flex-1 h-[300px] sm:h-[400px] bg-[#2b2b2b] p-6 rounded-lg">
-                            <h3 className="text-center text-lg font-semibold">Amount Distribution by Category</h3>
-                            <Pie data={pieChartData2} options={pieChartOptions} />
-                        </div>
-                    )}
+                <span className='bg-[#36a1b6] p-2 rounded-xl text-center md:text-left'>Apply Filters</span>
+                <div className="flex flex-col md:flex-row gap-2">
+                    <label htmlFor="category" className="bg-white text-black p-2 rounded-xl">Category:</label>
+                    <input
+                        type="text"
+                        id="category"
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        placeholder="Search by category"
+                        className="p-2 rounded-md border border-white w-full md:w-auto"
+                    />
                 </div>
-    
-            {/* Download Button */}
+                <div className="flex flex-col md:flex-row gap-2">
+                    <label htmlFor="amount" className="bg-white text-black p-2 rounded-xl">Amount:</label>
+                    <input
+                        type="number"
+                        id="minAmount"
+                        value={amountFilter[0]}
+                        onChange={(e) => setAmountFilter([+e.target.value, amountFilter[1]])}
+                        className="p-2 rounded-md border border-white w-full md:w-auto"
+                        placeholder="Min Amount"
+                    />
+                    <input
+                        type="number"
+                        id="maxAmount"
+                        value={amountFilter[1]}
+                        onChange={(e) => setAmountFilter([amountFilter[0], +e.target.value])}
+                        className="p-2 rounded-md border border-white w-full md:w-auto"
+                        placeholder="Max Amount"
+                    />
+                </div>
+                <div className="flex flex-col md:flex-row gap-2">
+                    <label htmlFor="date" className="bg-white text-black p-2 rounded-xl">Date Range:</label>
+                    <input
+                        type="date"
+                        id="startDate"
+                        value={dateFilter.start}
+                        onChange={(e) => setDateFilter({ ...dateFilter, start: e.target.value })}
+                        className="p-2 rounded-md border border-white w-full md:w-auto"
+                    />
+                    <input
+                        type="date"
+                        id="endDate"
+                        value={dateFilter.end}
+                        onChange={(e) => setDateFilter({ ...dateFilter, end: e.target.value })}
+                        className="p-2 rounded-md border border-white w-full md:w-auto"
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between gap-6 sm:flex-wrap">
+                {filteredTransactions?.length > 0 && (
+                    <div className="flex-1 h-[300px] sm:h-[400px] bg-[#2b2b2b] p-6 rounded-lg">
+                        <h3 className="text-center text-lg font-semibold">Amount Distribution by Category</h3>
+                        <Pie data={pieChartData1} options={pieChartOptions} />
+                    </div>
+                )}
+                {filteredTransactions?.length > 0 && (
+                    <div className="flex-1 h-[300px] sm:h-[400px] bg-[#2b2b2b] p-6 rounded-lg">
+                        <h3 className="text-center text-lg font-semibold">Amount Distribution by Category</h3>
+                        <Pie data={pieChartData2} options={pieChartOptions} />
+                    </div>
+                )}
+            </div>
+
             <button
                 onClick={downloadExcel}
                 className="hover:bg-[#2f8a9d] bg-[#36a1b6] cursor-pointer text-white p-2 rounded-md mt-6 flex justify-center mx-auto w-full md:w-1/3"
             >
                 Download Transactions
             </button>
-    
-            {/* Transaction Table */}
+
             {filteredTransactions && filteredTransactions.length > 0 ? (
                 <div className="overflow-x-auto p-4 mt-6">
                     <table className="w-full bg-[#2b2b2b] text-white border border-gray-700 rounded-lg">
@@ -294,7 +276,7 @@ const GetTransaction = () => {
             )}
         </div>
     );
-    
+
 };
 
 export default GetTransaction;

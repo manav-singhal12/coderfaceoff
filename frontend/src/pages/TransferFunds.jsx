@@ -1,21 +1,25 @@
-import React, { useState,useEffect } from "react";
-import { Buffer } from "buffer"; 
+import React, { useState, useEffect } from "react";
+import { Buffer } from "buffer";
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useSendPaymentMutation } from "../redux/api/PaymentApiSlice";
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from "react-redux";
-if (!window.Buffer) {
-  window.Buffer = Buffer;
+
+if (!window.Buffer) { //for encoding decoding of binary data
+  window.Buffer = Buffer; // for crypto in browser
 }
 
 const TransferFunds = () => {
-   const {userInfo} = useSelector((state)=>(state.auth))
-    const navigate = useNavigate()
-    useEffect(() => {
-      if (!userInfo) {
-        navigate("/login");
-      }
-    }, [userInfo, navigate]);
+
+  const { userInfo } = useSelector((state) => (state.auth))
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!userInfo) {
+      navigate("/login");
+    }
+  }, [userInfo, navigate]);
+
   const [wallet, setWallet] = useState(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -27,13 +31,16 @@ const TransferFunds = () => {
 
   const network = "https://api.devnet.solana.com";
   const connection = new Connection(network);
+
   const [sendPayment] = useSendPaymentMutation();
+
   const connectWallet = async () => {
     try {
       if (!window.solana) {
-        alert("Solana wallet not found! Please install Phantom Wallet.");
+        alert("Solana wallet not found! Please install Solana Wallet.");
         return;
       }
+
       const response = await window.solana.connect();
       setWallet(response);
       setWalletAddress(response.publicKey.toString());
@@ -44,17 +51,14 @@ const TransferFunds = () => {
   };
 
   const sendSol = async () => {
+
     if (!wallet) {
       alert("Please connect your wallet first.");
       return null;
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
-      setStatus("Amount must be greater than 0!");
-      return null;
-    }
+    const receiverAddress = receiverKey;
 
-    const receiverAddress = import.meta.env.VITE_SOLANA_RECEIVER_ADDRESS || receiverKey;
     if (!receiverAddress) {
       setStatus("Receiver address is not set!");
       console.error("Error: Receiver address is missing.");
@@ -62,9 +66,10 @@ const TransferFunds = () => {
     }
 
     const destPubkey = new PublicKey(receiverAddress);
-    const lamports = parseFloat(amount) * LAMPORTS_PER_SOL;
+    const lamports = (amount) * LAMPORTS_PER_SOL;
 
     try {
+
       const balance = await connection.getBalance(wallet.publicKey);
       console.log("Wallet balance:", balance / LAMPORTS_PER_SOL, "SOL");
 
@@ -82,16 +87,15 @@ const TransferFunds = () => {
       );
 
       transaction.feePayer = wallet.publicKey;
-      const { blockhash } = await connection.getLatestBlockhash();
+
+      const { blockhash } = await connection.getLatestBlockhash(); //prevents replay attacks by using a unique blockhash
       transaction.recentBlockhash = blockhash;
 
       const { signature } = await window.solana.signAndSendTransaction(transaction);
       await connection.confirmTransaction(signature);
-      
-
-    console.log("Transaction Successful! Signature:", signature);
 
 
+      console.log("Transaction Successful! Signature:", signature);
       setStatus(`Transaction Successful! Tx Hash: ${ellipsizeAddress(signature)}`);
 
       return signature;
@@ -107,15 +111,16 @@ const TransferFunds = () => {
     setIsSubmitting(true);
 
     const transactionSignature = await sendSol();
+
     if (!transactionSignature) {
       setIsSubmitting(false);
       return;
     }
-    
+
     const paymentData = {
 
-      sender_key:walletAddress,
-      receiver_key:receiverKey,
+      sender_key: walletAddress,
+      receiver_key: receiverKey,
       receivername,
       amount,
       category,
@@ -147,8 +152,7 @@ const TransferFunds = () => {
       <div className="bg-[#2b2b2b] rounded-2xl shadow-2xl p-8 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center  mb-6"> Send Money</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* Receiver Key */}
+
           <div>
             <label className="block text-sm font-medium  mb-2">Receiver Key</label>
             <input
@@ -162,7 +166,6 @@ const TransferFunds = () => {
               required
             />
           </div>
-          {/* {Receiver Name} */}
           <div>
             <label className="block text-sm font-medium  mb-2">Receiver Name</label>
             <input
@@ -171,13 +174,12 @@ const TransferFunds = () => {
               onChange={(e) => setReceiverName(e.target.value)}
               placeholder="Enter Receiver Name"
               className="w-full p-3 border rounded-2xl mt-1 focus:outline-none border-black bg-black text-white"
-              
+
               // className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               required
             />
           </div>
 
-          {/* Amount */}
           <div>
             <label className="block text-sm font-medium  mb-2">Amount (SOL)</label>
             <input
@@ -186,13 +188,12 @@ const TransferFunds = () => {
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount"
               className="w-full p-3 border rounded-2xl mt-1 focus:outline-none border-black bg-black text-white"
-              
+
               // className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               required
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="block text-sm font-medium  mb-2">Category</label>
             <input
@@ -207,30 +208,25 @@ const TransferFunds = () => {
             />
           </div>
 
-          {/* Connect Wallet Button */}
-          <button 
-            type="button" 
-            onClick={connectWallet} 
+          <button
+            type="button"
+            onClick={connectWallet}
             className="w-full p-3 cursor-pointer hover:bg-[#2f8a9d] bg-[#36a1b6] text-white rounded-lg uppercase font-semibold  transition"
 
           >
             {wallet ? "Connected" : "Connect Wallet"}
           </button>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
             className="w-full p-3 cursor-pointer hover:bg-[#2f8a9d] bg-[#36a1b6] text-white rounded-lg uppercase font-semibold  transition"
 
-            // className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          // className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Processing..." : "Send Money"}
           </button>
         </form>
-
-        {/* Transaction Status */}
-        {/* {status && <p className="text-center text-sm text-gray-600 mt-4">{status}</p>} */}
       </div>
     </div>
   );

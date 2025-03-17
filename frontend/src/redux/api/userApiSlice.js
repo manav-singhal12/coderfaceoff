@@ -1,44 +1,44 @@
 import apiSlice from "./apiSlice";
 import { MAIN_URL } from "../constant.js";
 
-export const userApiSlice=apiSlice.injectEndpoints({
+export const userApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        register:builder.mutation({
+        register: builder.mutation({
             query: (data) => ({
-                url:`${MAIN_URL}/register`,
+                url: `${MAIN_URL}/register`,
                 method: 'POST',
-                body:data
+                body: data
             }),
         }),
-        login:builder.mutation({
+        login: builder.mutation({
             query: (data) => ({
-                url:`${MAIN_URL}/login`,
+                url: `${MAIN_URL}/login`,
                 method: 'POST',
-                body:data,
-                credentials:"include",
+                body: data,
+                credentials: "include",
             })
         }),
-        logout:builder.mutation({
+        logout: builder.mutation({
             query: () => ({
-                url:`${MAIN_URL}/logout`,
+                url: `${MAIN_URL}/logout`,
                 method: 'POST',
-                headers:{
-                    Authorization:`Bearer ${localStorage.getItem("accessToken")}`
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`
                 },
-                credentials:"include",
+                credentials: "include",
 
             }),
         }),
-        updateProfile:builder.mutation({
+        updateProfile: builder.mutation({
             query: (data) => ({
-                url:`${MAIN_URL}/update-profile`,
+                url: `${MAIN_URL}/update-profile`,
                 method: 'PUT',
-                body:data,
-                credentials:"include",
+                body: data,
+                credentials: "include",
 
             }),
-        })                                                                                                                                  
+        })
     }),
 })
 
-export const {useRegisterMutation,useLoginMutation,useLogoutMutation,useUpdateProfileMutation} =userApiSlice;
+export const { useRegisterMutation, useLoginMutation, useLogoutMutation, useUpdateProfileMutation } = userApiSlice;

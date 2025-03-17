@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Loader from "../components/Loader.jsx";
 import {
     useAddLimitMutation,
@@ -13,18 +13,22 @@ import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 
 const Limits = () => {
-     const {userInfo} = useSelector((state)=>(state.auth))
-      const navigate = useNavigate()
-      useEffect(() => {
+
+    const { userInfo } = useSelector((state) => (state.auth))
+    const navigate = useNavigate()
+
+    useEffect(() => {
         if (!userInfo) {
-          navigate("/login");
+            navigate("/login");
         }
-      }, [userInfo, navigate]);
+    }, [userInfo, navigate]);
 
     const [addLimit, { isLoading }] = useAddLimitMutation();
+
     const { data: limits, isLoading: isFetchingLimits } = useGetLimitsQuery();
     const { data: accountsData, isLoading: isFetchingAccounts } = useGetAccountsQuery();
     const { data: paymentsData, isLoading: isFetchingPayments } = useGetPaymentsQuery();
+
     const [updateLimit] = useUpdateLimitMutation();
     const [deleteLimit] = useDeleteLimitMutation();
 
@@ -39,28 +43,28 @@ const Limits = () => {
 
     const calculateProgress = (limit) => {
         if (!paymentsData?.payments || !accountsData?.message) return 0;
-    
-        // Get all user's public keys
+
         const publicKeys = accountsData.message.map(account => account.public_key);
-        
-        // Create comparable Date objects for the limit
+
         const limitStartDate = new Date(limit.startDate);
         const limitEndDate = new Date(limit.endDate);
-        
+
         // Set time components to cover entire days
-        limitStartDate.setHours(0, 0, 0, 0); // Start of day
-        limitEndDate.setHours(23, 59, 59, 999); // End of day
+        limitStartDate.setHours(0, 0, 0, 0); 
+        limitEndDate.setHours(23, 59, 59, 999); 
+
         // Filter relevant payments
         const relevantPayments = paymentsData.payments.filter(payment => {
             const paymentDate = new Date(payment.time);
-            
+
             // Convert payment date to UTC
             const utcPaymentDate = new Date(Date.UTC(
                 paymentDate.getUTCFullYear(),
                 paymentDate.getUTCMonth(),
                 paymentDate.getUTCDate()
             ));
-            console.log(payment.category.trim(),limit.category.trim())
+
+            console.log(payment.category.trim(), limit.category.trim())
             console.log("Comparison:", {
                 categoryMatch: payment.category.trim() === limit.category.trim(),
                 dateInRange: utcPaymentDate >= limitStartDate && utcPaymentDate <= limitEndDate,
@@ -69,7 +73,7 @@ const Limits = () => {
                 limitStart: limitStartDate.toISOString(),
                 limitEnd: limitEndDate.toISOString()
             });
-    
+
             return (
                 payment.category.trim() === limit.category.trim() &&
                 utcPaymentDate >= limitStartDate &&
@@ -77,24 +81,12 @@ const Limits = () => {
                 publicKeys.includes(payment.sender_key)
             );
         });
-    
-        // Calculate total spent
+
         const totalSpent = relevantPayments.reduce((sum, payment) => sum + payment.amount, 0);
         const progress = (totalSpent / limit.amount) * 100;
         return Math.min(progress, 100);
     };
-    //             publicKeys.includes(payment.sender_key)
-    //         );
-    //     });
-    // };
-    // const calculateProgress = (limit) => {
-    //     if (!paymentsData?.payments || !accountsData?.message) return 0;
-    //     const publicKeys = accountsData?.message.map(account => account.public_key);
-    //     const relevantPayments = filterPayments(paymentsData?.payments, publicKeys, limit);
-    //     const totalSpent = relevantPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    //     const progress = (totalSpent / limit.amount) * 100;
-    //     return Math.min(progress, 100);
-    // };
+  
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -153,13 +145,11 @@ const Limits = () => {
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 mx-6 mb-10 ">
-                {/* Add/Update Form */}
                 <div className="w-full md:w-1/3 bg-[#2b2b2b] rounded-xl h-[50%] shadow-lg p-6">
                     <h2 className="text-2xl font-bold text-white mb-6 text-center">
                         {editingId ? "UPDATE LIMIT" : "ADD LIMIT"}
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Form fields remain same */}
                         <div>
                             <label className="block font-semibold text-white">Category</label>
                             <input
@@ -223,7 +213,6 @@ const Limits = () => {
                     {isLoading && <Loader />}
                 </div>
 
-                {/* Limits List */}
                 <div className="w-full md:w-2/3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
                         {limits?.message.map((limit) => {
@@ -241,16 +230,15 @@ const Limits = () => {
                                         {/* <p><strong>Period:</strong> {limit.period}</p> */}
                                         <p><strong>Start Date:</strong> {new Date(limit.startDate).toLocaleDateString()}</p>
                                         <p><strong>End Date:</strong> {new Date(limit.endDate).toLocaleDateString()}</p>
-                                        
-                                        {/* Progress Bar */}
+
                                         <div className="pt-4">
                                             <div className="flex justify-between mb-1">
                                                 <span className="text-sm font-medium">Progress</span>
                                                 <span className="text-sm font-medium">{progress.toFixed(1)}%</span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                <div 
-                                                    className={`${progressColor} h-2.5 rounded-full transition-all duration-300`} 
+                                                <div
+                                                    className={`${progressColor} h-2.5 rounded-full transition-all duration-300`}
                                                     style={{ width: `${progressWidth}%` }}
                                                 ></div>
                                             </div>

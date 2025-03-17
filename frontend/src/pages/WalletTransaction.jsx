@@ -3,16 +3,19 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { useParams } from "react-router-dom";
 import { useGetPaymentsQuery, useSendPaymentMutation } from "../redux/api/PaymentApiSlice.js";
 import { useNavigate } from 'react-router-dom';
-
 import { useSelector } from "react-redux";
+
 const WalletTransactions = () => {
-  const {userInfo} = useSelector((state)=>(state.auth))
+  
+  const { userInfo } = useSelector((state) => (state.auth))
   const navigate = useNavigate()
+
   useEffect(() => {
     if (!userInfo) {
       navigate("/login");
     }
   }, [userInfo, navigate]);
+
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nextSignature, setNextSignature] = useState(null);
@@ -83,10 +86,8 @@ const WalletTransactions = () => {
     return <div>Error fetching transactions: {error.message}</div>;
   }
 
-  // Get stored transactions' signatures
   const storedSignatures = new Set(data?.payments?.map((payment) => payment.signature));
 
-  // Filter transactions not in the database
   const filteredTransactions = transactions.filter((t) => {
     if (!t?.meta || !t?.transaction) return false;
 
@@ -96,27 +97,24 @@ const WalletTransactions = () => {
 
     return (
       !storedSignatures.has(t.transaction.signatures[0]) &&
-      senderKey === walletAddress && 
+      senderKey === walletAddress &&
       amountDeducted > 0
     );
   });
 
-  // Handle category input change
   const handleCategoryChange = (signature, value) => {
     setCategoryInputs((prev) => ({ ...prev, [signature]: value }));
   };
 
-  // Handle receiver name input change
   const handleReceiverNameChange = (signature, value) => {
     setReceivernameInputs((prev) => ({ ...prev, [signature]: value }));
   };
 
-  // Handle add payment function
   const handleAddPayment = async (transaction) => {
     const signature = transaction.transaction.signatures[0];
     const category = categoryInputs[signature];
     const receiver_name = receivernameInputs[signature];
-  
+
     if (!category) {
       alert("Category is required");
       return;
@@ -125,9 +123,9 @@ const WalletTransactions = () => {
       alert("Receiver Name is required");
       return;
     }
-  
+
     const blockTime = transaction.blockTime ? new Date(transaction.blockTime * 1000) : null;
-  
+
     const paymentData = {
       sender_key: transaction.transaction.message.accountKeys[0].toString(),
       receiver_key: transaction.transaction.message.accountKeys[1].toString(),
@@ -137,7 +135,7 @@ const WalletTransactions = () => {
       receivername: receiver_name, // Added receiver name field
       time: blockTime ? blockTime : "", // Ensure time is formatted
     };
-  
+
     try {
       await sendPayment(paymentData);
       window.location.reload();
@@ -147,7 +145,7 @@ const WalletTransactions = () => {
       alert("Failed to add payment.");
     }
   };
-  
+
 
   return (
     <div className="p-4">
@@ -156,7 +154,7 @@ const WalletTransactions = () => {
           Transactions for Wallet: {walletkey}
         </h2>
       </div>
-  
+
       {filteredTransactions && filteredTransactions.length > 0 ? (
         <div className="overflow-x-auto p-4">
           <table className="min-w-full bg-[#2b2b2b] text-white border border-gray-700 rounded-lg">
@@ -175,14 +173,14 @@ const WalletTransactions = () => {
             <tbody>
               {filteredTransactions.map((transaction, index) => {
                 const signature = transaction.transaction.signatures[0];
-                const amount = ((transaction.meta.preBalances[0] - 
-                                transaction.meta.postBalances[0] + 
-                                transaction.meta.fee) / 1e9).toFixed(4);
+                const amount = ((transaction.meta.preBalances[0] -
+                  transaction.meta.postBalances[0] +
+                  transaction.meta.fee) / 1e9).toFixed(4);
                 const senderKey = transaction.transaction.message.accountKeys[0].toString();
                 const receiverKey = transaction.transaction.message.accountKeys[1].toString();
-                const blockTime = transaction.blockTime ? 
+                const blockTime = transaction.blockTime ?
                   new Date(transaction.blockTime * 1000).toLocaleString() : 'N/A';
-  
+
                 return (
                   <tr key={index} className="hover:bg-[#3a3a3a] text-center text-xs sm:text-sm">
                     <td className="p-2 border border-gray-600">{index + 1}</td>
@@ -209,7 +207,7 @@ const WalletTransactions = () => {
                     </td>
                     <td className="p-2 border border-gray-600">{blockTime}</td>
                     <td className="p-2 border border-gray-600">
-                      <button 
+                      <button
                         onClick={() => handleAddPayment(transaction)}
                         className="bg-[#36a1b6] hover:bg-[#2f8a9d] cursor-pointer text-white py-1 px-3 rounded text-xs sm:text-sm"
                       >
@@ -227,7 +225,7 @@ const WalletTransactions = () => {
           No transactions found for this wallet.
         </span>
       )}
-  
+
       {loading && <div className="text-center mt-3">Loading more transactions...</div>}
       {!loading && nextSignature && (
         <button
@@ -239,35 +237,7 @@ const WalletTransactions = () => {
       )}
     </div>
   );
-  
+
 };
 
 export default WalletTransactions;
-
-
-{/* <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{new Date(t.blockTime * 1000).toLocaleString()}</td>
-              <td>{((t.meta.preBalances[0] - t.meta.postBalances[0] + t.meta.fee) / 1e9).toFixed(4)}</td>
-              <td>{t.transaction.message.accountKeys[0].toString()}</td>
-              <td>{t.transaction.message.accountKeys[1].toString()}</td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Enter category"
-                  value={categoryInputs[t.transaction.signatures[0]] || ""}
-                  onChange={(e) => handleCategoryChange(t.transaction.signatures[0], e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Enter receiver name"
-                  value={receivernameInputs[t.transaction.signatures[0]] || ""}
-                  onChange={(e) => handleReceiverNameChange(t.transaction.signatures[0], e.target.value)}
-                />
-              </td>
-              <td>
-                <button onClick={() => handleAddPayment(t)}>Add Payment</button>
-              </td>
-            </tr> */}

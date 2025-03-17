@@ -11,6 +11,7 @@ export default function Login() {
 
   const { userInfo } = useSelector((state) => (state.auth))
   const navigate = useNavigate();
+
   const [username, setusername] = useState("")
   const [password, setPassword] = useState("")
   const [loginApiCall, { isLoading }] = useLoginMutation()
@@ -27,15 +28,12 @@ export default function Login() {
     try {
       const res = await loginApiCall({ username, password }).unwrap();
       if (res) {
-        // localStorage.setItem('accessToken', res.accessToken);
-        // localStorage.setItem('refreshToken', res.refreshToken);
-
+       
         toast.success("Login successFully! ✅");
         dispatch(setCredentials(res));
         navigate('/')
       }
-      // dispatch(setCredentials(res));
-      // navigate("/getCurrentUser");
+      
     } catch (error) {
       let errorMessage = "Login failed! ❌";
 
@@ -54,7 +52,7 @@ export default function Login() {
         }
       }
 
-      // toast.error(errorMessage, { position: "top-right" });  
+      toast.error(errorMessage, { position: "top-right" });  
 
       console.log("Something went wrong while sending data to API: ", error);
     }

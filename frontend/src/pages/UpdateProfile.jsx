@@ -1,30 +1,34 @@
-// src/components/UpdateProfile.jsx
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useUpdateProfileMutation } from "../redux/api/userApiSlice";
+
+
 const UpdateProfile = () => {
-   const {userInfo} = useSelector((state)=>(state.auth))
-    const navigate = useNavigate()
-    useEffect(() => {
-      if (!userInfo) {
-        navigate("/login");
-      }
-    }, [userInfo, navigate]);
+
+  const { userInfo } = useSelector((state) => (state.auth))
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!userInfo) {
+      navigate("/login");
+    }
+  }, [userInfo, navigate]);
 
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
     walletKey: [],
   });
+
   const user = userInfo.data.user;
 
   const [walletKeyInput, setWalletKeyInput] = useState("");
   const [updateProfile, { isLoading, error }] = useUpdateProfileMutation();
 
-  // Pre-populate form when user data is available
-  console.log("userinfo",userInfo);
+  console.log("userinfo", userInfo);
   // console.log(userInfo.data.user.walletKey)
+
   useEffect(() => {
     if (userInfo) {
       setFormData({
@@ -35,42 +39,41 @@ const UpdateProfile = () => {
     }
   }, [userInfo]);
 
-  // Handle input changes for fullname and email
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Add a new walletKey if it doesn't exist
-  const addWalletKey = (e) => {
-    e.preventDefault();
-    if (walletKeyInput.trim() && !formData.walletKey.includes(walletKeyInput.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        walletKey: [...prev.walletKey, walletKeyInput.trim()],
-      }));
-      setWalletKeyInput("");
-    }
-  };
+  // const addWalletKey = (e) => {
+  //   e.preventDefault();
+  //   if (walletKeyInput.trim() && !formData.walletKey.includes(walletKeyInput.trim())) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       walletKey: [...prev.walletKey, walletKeyInput.trim()],
+  //     }));
+  //     setWalletKeyInput("");
+  //   }
+  // };
 
   // Handle profile update
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       console.log("Submitting Data:", formData); // Debugging step
-  
+
       await updateProfile({
         fullname: formData.fullname,
         email: formData.email,
       }).unwrap();
-      
+
       navigate("/"); // Navigate after successful update
     } catch (err) {
       console.error("Error updating profile:", err);
     }
   };
-  
+
 
   return (
     <div className="min-h-screen flex items-center justify-center  p-4">
@@ -80,36 +83,23 @@ const UpdateProfile = () => {
         </h2>
         {error && <p className="text-red-600 text-center mb-4">{error?.data?.message || "Something went wrong"}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col items-center">
-          {user.avatar ? (
-            <img
-              src={user.avatar}
-              alt={user.username}
-              className="w-32 h-32 rounded-full border-4 border-[#36a1b6] shadow-lg mb-6"
-            />
-          ) : (
-            <div className="w-32 h-32 flex items-center justify-center rounded-full bg-blue-500 text-white text-4xl font-bold mb-6">
-              Hi 👋 {user.username}
-            </div>
-          )}
-          <h3 className="text-3xl font-bold  mb-2">              Hi ! {user.username}  
-          </h3>
-         
-        </div>
-        {/* <div>
-            <label htmlFor="usename" className="block font-semibold ">
-              User Name
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:border-[#004d40]"
-            />
-          </div> */}
+          <div className="flex flex-col items-center">
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.username}
+                className="w-32 h-32 rounded-full border-4 border-[#36a1b6] shadow-lg mb-6"
+              />
+            ) : (
+              <div className="w-32 h-32 flex items-center justify-center rounded-full bg-blue-500 text-white text-4xl font-bold mb-6">
+                Hi 👋 {user.username}
+              </div>
+            )}
+            <h3 className="text-3xl font-bold  mb-2">              Hi ! {user.username}
+            </h3>
+
+          </div>
+          
           <div>
             <label htmlFor="fullname" className="block font-semibold ">
               Full Name
@@ -139,7 +129,7 @@ const UpdateProfile = () => {
             />
           </div>
 
-          
+
 
           <button
             type="submit"

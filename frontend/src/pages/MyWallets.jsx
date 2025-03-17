@@ -1,23 +1,26 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from 'react-toastify'
-import { useAddAccountMutation} from '../redux/api/WalletApiSlice.js'
+import { useAddAccountMutation } from '../redux/api/WalletApiSlice.js'
 import { Connection } from "@solana/web3.js";
-import { clusterApiUrl } from "@solana/web3.js";
 import GetAccounts from "../components/GetAccounts.jsx";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const WalletConnect = () => {
-  const {userInfo} = useSelector((state)=>(state.auth))
+
+  const { userInfo } = useSelector((state) => (state.auth))
   const navigate = useNavigate()
+
   useEffect(() => {
     if (!userInfo) {
       navigate("/login");
     }
   }, [userInfo, navigate]);
+
   const [walletAddress, setWalletAddress] = useState(null);
   const [addAccount, { isLoading }] = useAddAccountMutation();
+
   // const { data: AccountData, error, isSuccess, isError } = useGetAccountsQuery();
   // console.log(AccountData);
 
@@ -38,6 +41,7 @@ const WalletConnect = () => {
 
       console.log("Balance:", balance / 1e9, "SOL");
       console.log(response.publicKey.toString());
+      
       const AccountData = {
         public_key: response.publicKey.toString(),
         balance,
@@ -53,7 +57,7 @@ const WalletConnect = () => {
           toast.error(apiError.message || "Failed to add wallet!");
         }
       }
-  
+
 
     } catch (error) {
       toast.error(error.message, { position: "top-right" });
@@ -66,7 +70,7 @@ const WalletConnect = () => {
       <button onClick={connectWallet} className="w-[70%] mx-[15%] my-10 hover:cursor-pointer p-3 hover:bg-[#2f8a9d] bg-[#36a1b6] text-white rounded-lg uppercase font-semibold  transition">
         Add Wallet
       </button>
-      <GetAccounts/>
+      <GetAccounts />
     </div>
   );
 };

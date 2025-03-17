@@ -18,9 +18,9 @@ const uploadOnCloudinary=async(localFilePath)=>{
             return null;
         }
         const result=await cloudinary.uploader.upload(localFilePath,{
-            resource_type:"auto"
+            resource_type:"auto" //autodetect the type of file
         })
-        fs.unlinkSync(localFilePath);
+        fs.unlinkSync(localFilePath); // delete from system
         return result;
         
     } catch (error) {

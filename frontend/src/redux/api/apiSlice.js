@@ -1,13 +1,13 @@
-import {fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { createApi } from "@reduxjs/toolkit/query/react";
-import {BASE_URL} from '../constant.js'
+import { BASE_URL } from '../constant.js'
 
-const apiSlice=createApi({
-    reducerPath:'api',
-    baseQuery:fetchBaseQuery({
-        baseUrl:BASE_URL
+const apiSlice = createApi({
+    reducerPath: 'api',
+    baseQuery: fetchBaseQuery({
+        baseUrl: BASE_URL
     }),
-    endpoints:()=>({})
+    endpoints: () => ({})
 })
 
 export default apiSlice;

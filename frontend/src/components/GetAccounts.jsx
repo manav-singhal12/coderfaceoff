@@ -5,22 +5,21 @@ import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
 import { useGetPaymentsQuery } from "../redux/api/PaymentApiSlice";
 
-// Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const GetAccounts = () => {
-  // Always call hooks unconditionally at the top level
+
   const { data: accountsData, error: accountsError, isLoading: accountsLoading } = useGetAccountsQuery();
   const { data: paymentsData, error: paymentsError, isLoading: paymentsLoading } = useGetPaymentsQuery();
   const navigate = useNavigate();
 
   const [selectedAccount, setSelectedAccount] = useState("All");
-  // State management
+
+  //filters
   const [categoryFilter, setCategoryFilter] = useState('');
   const [amountFilter, setAmountFilter] = useState([0, 1000000]);
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
 
-  // Handle loading and errors first
   if (accountsLoading || paymentsLoading) return <div>Loading...</div>;
   if (accountsError) return <div>Error: {accountsError.message}</div>;
   if (paymentsError) return <div>Error: {paymentsError.message}</div>;
@@ -42,7 +41,7 @@ const GetAccounts = () => {
     return `hsl(${hash % 360}, 70%, 50%)`;
   };
 
-  // Prepare data for Pie Chart
+  // Pie Chart
   const chartData = {
     labels: accounts.map((acc) => acc.public_key.slice(0, 4) + "..." + acc.public_key.slice(-4)),
     datasets: [
@@ -58,9 +57,9 @@ const GetAccounts = () => {
   // Filter transactions
   const filteredTransactions = allTransactions
     .filter(txn => publicKeys.includes(txn.sender_key))
-    .filter(txn => selectedAccount === "All" || txn.sender_key === selectedAccount) // Filter by selected account
+    .filter(txn => selectedAccount === "All" || txn.sender_key === selectedAccount)
     .filter(txn => {
-      const txnDate = new Date(txn.createdAt);
+      const txnDate = new Date(txn.time);
       return (
         (!dateFilter.start || txnDate >= new Date(dateFilter.start)) &&
         (!dateFilter.end || txnDate <= new Date(dateFilter.end)) &&
@@ -69,40 +68,44 @@ const GetAccounts = () => {
         txn.category.toLowerCase().includes(categoryFilter.toLowerCase())
       );
     })
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    .sort((a, b) => new Date(b.time) - new Date(a.time));
 
-  // Get last 12 months for bar chart labels
-  const last12Months = Array.from({ length: 12 }, (_, i) => {
+
+  const last12Months = Array.from({ length: 12 }, (_, i) => { // array of 12 elements
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     return date.toISOString().slice(0, 7);
   }).reverse();
 
-  // Group transactions by month and account
+
   const monthlySpending = allTransactions.reduce((acc, txn) => {
-    const month = new Date(txn.createdAt).toISOString().slice(0, 7);
+    const month = new Date(txn.time).toISOString().slice(0, 7);
     if (last12Months.includes(month)) {
       if (!acc[txn.sender_key]) {
-        acc[txn.sender_key] = {};
+        acc[txn.sender_key] = {}; // if not exist create one
       }
       acc[txn.sender_key][month] = (acc[txn.sender_key][month] || 0) + txn.amount;
     }
     return acc;
   }, {});
 
-  // Data for the bar chart
+  // Bar chart
   const barChartData = {
     labels: last12Months,
     datasets: accounts.map((acc) => ({
       label: `${acc.public_key.slice(0, 5)}...${acc.public_key.slice(-5)}`,
       data: last12Months.map((month) => monthlySpending[acc.public_key]?.[month] || 0),
-      backgroundColor: stringToColor(acc.public_key), // Ensure consistent coloring
+      backgroundColor: stringToColor(acc.public_key),
     })),
   };
+
+
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
+    animation: false, // Disable animations for performance
   };
+
   return (
     <div className="p-4 px-10">
       <h2 className="text-2xl">Your Accounts</h2>
@@ -110,17 +113,15 @@ const GetAccounts = () => {
 
 
 
-      {/* Account Cards & Pie Chart */}
       {accounts.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 ">
-            {/* Pie Chart Section */}
+
             <div className="col-span-1 lg:col-span-2 w-[90%] max-w-md mx-auto h-[300px] sm:h-[400px] lg:h-[500px]  p-5 rounded-lg">
               <h3 className="text-lg text-center mb-2">Balance Distribution</h3>
               <Pie data={chartData} />
             </div>
 
-            {/* Account Cards */}
             <div className="col-span-1 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10 mb-10">
               {accounts.map((account, index) => (
                 <div key={index} className="p-4 text-white rounded-2xl shadow-lg bg-[#2b2b2b]">
@@ -129,7 +130,7 @@ const GetAccounts = () => {
                   <p><strong>Public Key:</strong> {account.public_key.slice(0, 8) + '.........' + account.public_key.slice(-8)}
                   </p>
                   <br />
-                  <p><strong>Balance:</strong> {account.balance ? parseFloat(account.balance).toFixed(2) : "0"} SOL</p>
+                  <p><strong>Balance:</strong> {account.balance ? (account.balance).toFixed(2) : "0"} SOL</p>
                   <br />
                   <div className="flex justify-between sm:flex-col gap-4">
                     <button
@@ -148,14 +149,12 @@ const GetAccounts = () => {
             </div>
           </div>
 
-          {/* Bar Chart Section */}
           <div className="my-10 flex justify-center items">
-            {filteredTransactions.length > 0 && (
-              <div className="lg:w-full w-auto bg-[#2b2b2b] rounded-lg">
-                <h3 className=" text-center ">Amount Distribution by Month</h3>
-                <Bar className="" data={barChartData} options={chartOptions} />
-              </div>
-            )}
+            <div className="lg:w-full w-auto bg-[#2b2b2b] rounded-lg">
+              <h3 className=" text-center ">Amount Distribution by Month</h3>
+              <Bar className="" data={barChartData} options={chartOptions} />
+            </div>
+
           </div>
         </>
       ) : (

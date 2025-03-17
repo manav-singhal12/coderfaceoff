@@ -1,24 +1,21 @@
 
 import { useLogoutMutation } from "../redux/api/userApiSlice";
-// import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/auth/authSlice.js";
-import {toast} from 'react-toastify'
+import { toast } from 'react-toastify'
 
 const LogoutButton = () => {
     // const { userInfo } = useSelector((state) => state.auth);
     // console.log(userInfo);
     const dispatch = useDispatch();
-    // const navigate = useNavigate();
     const [logoutApiCall] = useLogoutMutation();
 
     const LogoutHandler = async () => {
         try {
-            await logoutApiCall().unwrap();
+            await logoutApiCall().unwrap(); // extracts the actual response from the action. for debugging purposes  else use then catch
 
             dispatch(logout());
             toast.success(" logout success")
-            // navigate("/");
         } catch (err) {
             console.log(err);
         }
@@ -26,8 +23,8 @@ const LogoutButton = () => {
 
     return (<>
         <button onClick={LogoutHandler} className="flex items-center px-4 ">
-              <span><strong>Logout</strong></span>
-            </button>
+            <span><strong>Logout</strong></span>
+        </button>
     </>)
 }
 

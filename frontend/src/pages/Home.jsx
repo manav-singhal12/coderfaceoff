@@ -1,15 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import LeftSideBar from "../components/LeftSideBar";
-import RightSideBar from "../components/RightSideBar";
 
 const Home = () => {
-  const { userInfo } = useSelector((state) => state.auth);
+
   const [solPrice, setSolPrice] = useState(null);
 
-  // Fetch Solana price in real-time
+  const features = [
+      {
+        title: "Secure Transactions",
+        desc: "Uses blockchain validation to prevent fraud and unauthorized transactions.",
+      },
+      {
+        title: "Connect Wallet",
+        desc: "Easily link a Solana wallet via public key or integrations like Phantom/Sollet.",
+      },
+      {
+        title: "Categorized Transactions",
+        desc: "Provides a breakdown of spending by category for better financial insights using charts.",
+      },
+      {
+        title: "Transaction Details",
+        desc: "Access receiver, amount, date, and category for each transaction.",
+      },
+      {
+        title: "Multiple Wallets",
+        desc: "Enables management of transactions for multiple wallets while displaying balances.",
+      },
+      {
+        title: "Search & Filter",
+        desc: "Visualize transaction details by using different filters on category, date, or amount.",
+      },
+    ];
   useEffect(() => {
     const fetchSolanaPrice = async () => {
       try {
@@ -28,10 +48,10 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Load TradingView Chart
+
   useEffect(() => {
     const chartContainer = document.getElementById("tradingview-chart");
-  
+
     // Prevent duplicate scripts
     if (chartContainer.children.length === 0) {
       const script = document.createElement("script");
@@ -45,11 +65,11 @@ const Home = () => {
         height: 500,
         locale: "en",
       });
-  
+
       chartContainer.appendChild(script);
     }
   }, []);
-  
+
 
   return (
     <>
@@ -78,50 +98,23 @@ const Home = () => {
         </section>
       </div>
 
-      {/* ✅ Real-Time SOL Price Section */}
-      
 
-      {/* Features Section */}
+
       <div className="col-span-1 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 m-10 my-20">
-        {[
-          {
-            title: "Secure Transactions",
-            desc: "Uses blockchain validation to prevent fraud and unauthorized transactions.",
-          },
-          {
-            title: "Connect Wallet",
-            desc: "Easily link a Solana wallet via public key or integrations like Phantom/Sollet.",
-          },
-          {
-            title: "Categorized Transactions",
-            desc: "Provides a breakdown of spending by category for better financial insights using charts.",
-          },
-          {
-            title: "Transaction Details",
-            desc: "Access receiver, amount, date, and category for each transaction.",
-          },
-          {
-            title: "Multiple Wallets",
-            desc: "Enables management of transactions for multiple wallets while displaying balances.",
-          },
-          {
-            title: "Search & Filter",
-            desc: "Visualize transaction details by using different filters on category, date, or amount.",
-          },
-        ].map((feature, index) => (
+        {features.map((feature, index) => (
           <div key={index} className="bg-[#2b2b2b] p-3 rounded-2xl">
             <h1 className="font-bold text-lg mb-2">{feature.title}</h1>
             <p>{feature.desc}</p>
           </div>
         ))}
       </div>
+      
       <div className="text-center my-6">
         <p className="text-xl mt-2">
           {solPrice ? `Live SOL Price: $${parseFloat(solPrice).toFixed(2)}` : "Loading..."}
         </p>
       </div>
 
-      {/* ✅ TradingView Chart Section */}
       <div id="tradingview-chart" className="my-10 mx-auto max-w-7xl"></div>
     </>
   );

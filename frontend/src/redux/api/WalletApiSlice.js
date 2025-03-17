@@ -8,7 +8,7 @@ export const WalletApiSlice = apiSlice.injectEndpoints({
                 url: `${ACCOUNT_URL}/addAccount`,
                 method: 'POST',
                 body: data,
-                credentials:"include",
+                credentials: "include",
 
             })
         }),
@@ -16,7 +16,7 @@ export const WalletApiSlice = apiSlice.injectEndpoints({
             query: () => ({
                 url: `${ACCOUNT_URL}/getAccounts`,
                 method: "GET",
-        credentials: "include",
+                credentials: "include",
                 transformResponse: (response) => {
                     console.log("API Response:", response);
                     return response?.data || []; // Ensure `data` exists
