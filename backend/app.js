@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 const app=express();
 
 app.use(cors({
-    origin:'https://solbudget.vercel.app',
+    origin:"*",
     credentials:true
 }));
 
