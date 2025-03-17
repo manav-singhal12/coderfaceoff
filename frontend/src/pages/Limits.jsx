@@ -39,7 +39,7 @@ const Limits = () => {
     const [endDate, setEndDate] = useState("");
     const [editingId, setEditingId] = useState(null);
 
-    if (isFetchingAccounts || isFetchingLimits || isFetchingPayments) return <Loader />;
+    if (isFetchingAccounts || isFetchingLimits || isFetchingPayments) return <p> Loading ...</p> ;
 
     const calculateProgress = (limit) => {
         if (!paymentsData?.payments || !accountsData?.message) return 0;
@@ -210,7 +210,7 @@ const Limits = () => {
                             {editingId ? "Update Limit" : "Add Limit"}
                         </button>
                     </form>
-                    {isLoading && <Loader />}
+                    {isLoading &&  <p>Loading...</p>}
                 </div>
 
                 <div className="w-full md:w-2/3">
