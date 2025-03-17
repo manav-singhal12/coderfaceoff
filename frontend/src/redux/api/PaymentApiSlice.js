@@ -7,12 +7,16 @@ export const PaymentApiSlice=apiSlice.injectEndpoints({
             query:(data)=>({
                 url:`${PAYMENT_URL}/sendPayment`,
                 method:'POST',
-                body:data
+                body:data,
+        credentials: "include",
+
             })
         }),
         getPayments:builder.query({
             query:()=>({
                 url:`${PAYMENT_URL}/getPayments`,
+                method: "GET",
+        credentials: "include",
                 transformResponse:(response)=>{
                     console.log("API Response:",response);
                     return response?.data || [];

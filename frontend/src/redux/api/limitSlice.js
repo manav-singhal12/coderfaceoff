@@ -7,12 +7,16 @@ export const LimitApiSlice=apiSlice.injectEndpoints({
             query:(data)=>({
                 url:`${LIMIT_URL}/addlimit`,
                 method:'POST',
-                body:data
+                body:data,
+        credentials: "include",
+
             })
         }),
         getLimits:builder.query({
             query:()=>({
                 url:`${LIMIT_URL}/getlimits`,
+                method: "GET",
+        credentials: "include",
                 transformResponse:(response)=>{
                     console.log("API Response:",response);
                     return response?.data || [];
@@ -23,14 +27,18 @@ export const LimitApiSlice=apiSlice.injectEndpoints({
             query:(data)=>({
                 url:`${LIMIT_URL}/updatelimit`,
                 method:'PUT',
-                body:data
+                body:data,
+        credentials: "include",
+
             })
         }),
         deleteLimit:builder.mutation({
             query:(data)=>({
                 url:`${LIMIT_URL}/deletelimit`,
                 method:'DELETE',
-                body:data
+                body:data,
+        credentials: "include",
+
             })
         })
     })

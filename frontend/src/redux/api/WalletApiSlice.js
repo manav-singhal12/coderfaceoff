@@ -8,11 +8,15 @@ export const WalletApiSlice = apiSlice.injectEndpoints({
                 url: `${ACCOUNT_URL}/addAccount`,
                 method: 'POST',
                 body: data,
+                credentials:"include",
+
             })
         }),
         getAccounts: builder.query({
             query: () => ({
                 url: `${ACCOUNT_URL}/getAccounts`,
+                method: "GET",
+        credentials: "include",
                 transformResponse: (response) => {
                     console.log("API Response:", response);
                     return response?.data || []; // Ensure `data` exists
