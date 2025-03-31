@@ -78,7 +78,7 @@ const loggedIn = await User.findById(user._id).select("-password -refreshToken")
 const options ={
     httpOnly:true,
     // secure:true,
-    secure: process.env.NODE_ENV !== "development"
+    secure: process.env.NODE_ENV !== "development",
     sameSite: "None"
   }
  
