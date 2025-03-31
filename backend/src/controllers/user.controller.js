@@ -77,7 +77,8 @@ const loggedIn = await User.findById(user._id).select("-password -refreshToken")
 
 const options ={
     httpOnly:true,
-    secure:true,
+    // secure:true,
+    secure: process.env.NODE_ENV !== "development"
     sameSite: "None"
   }
  
@@ -121,7 +122,8 @@ const loginUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
        sameSite:"none",  
-        secure: true,
+        // secure: true,   
+        secure: process.env.NODE_ENV !== "development"
         // secureProtocol: 'TLSv1_2_method',
         
 
@@ -187,7 +189,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         sameSite: "none",
-        secure: true,
+        // secure: true,
+        secure: process.env.NODE_ENV !== "development"
         // secureProtocol: 'TLSv1_2_method'
     }
     console.log("logiing out")
