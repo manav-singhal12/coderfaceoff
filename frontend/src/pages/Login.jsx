@@ -1,123 +1,63 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useLoginMutation } from "../redux/api/userApiSlice.js";
-import { useDispatch, useSelector } from "react-redux";
-import { setCredentials } from "../redux/auth/authSlice.js";
-import { useEffect } from "react";
-import { toast } from 'react-toastify'
-import Loader from '../components/Loader.jsx'
-export default function Login() {
+import React from 'react'
 
-
-  const { userInfo } = useSelector((state) => (state.auth))
-  const navigate = useNavigate();
-
-  const [username, setusername] = useState("")
-  const [password, setPassword] = useState("")
-  const [loginApiCall, { isLoading }] = useLoginMutation()
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (userInfo) {
-      navigate("/");
-    }
-  }, [userInfo, navigate]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await loginApiCall({ username, password }).unwrap();
-      if (res) {
-       
-        toast.success("Login successFully! ✅");
-        dispatch(setCredentials(res));
-        navigate('/')
-      }
-      
-    } catch (error) {
-      let errorMessage = "Login failed! ❌";
-
-      if (error?.data) {
-
-        const isHtml = typeof error.data === "string" && error.data.includes("<html");
-
-        if (isHtml) {
-
-          const match = error.data.match(/Error:\s(.*?)<br>/);
-          if (match) {
-            errorMessage = match[1];
-          }
-        } else if (error.data.message) {
-          errorMessage = error.data.message;
-        }
-      }
-
-      toast.error(errorMessage, { position: "top-right" });  
-
-      console.log("Something went wrong while sending data to API: ", error);
-    }
-
-  };
-
+const Login = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center  p-4">
-      <div className="bg-[#2b2b2b] p-8 rounded-xl shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Login</h2>
-        {/* {error && <p className="text-red-600 text-center mb-4">{error}</p>} */}
+    <div className="flex h-screen ">
+      {/* Left Section */}
+      <div className="left w-1/2 flex flex-col justify-between items-center p-8 bg-gray-700 text-white">
+        <div className="logo mb-6">
+          {/* You can put a logo image or text here */}
+         <div className="flex -mx-54">
+            <img src='/linkedin.png'></img>
+         <h1 className="text-3xl font-bold text-yellow-300">B Chat</h1>
+         </div>
+        </div>
+        <p className="text-xl font-semibold mb-2">Welcome Back</p>
+        
+        <div className="w-full max-w-sm">
+          <label className="block mb-1 text-sm">Email</label>
+          <input
+            type="email"
+            placeholder="*******"
+            className="w-full px-4 py-2 mb-4 border rounded"
+          />
 
+          <label className="block mb-1 text-sm">Password</label>
+          <input
+            type="password"
+            placeholder="*******"
+            className="w-full px-4 py-2 mb-4 border rounded"
+          />
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          <div>
-            <label htmlFor="username" className="block font-semibold text-white">Username</label>
-            <input
-              type="username"
-              id="username"
-              name="username"
-              value={username}
-              onChange={(e) => (setusername(e.target.value))}
-              required
-              placeholder="Enter your username"
-              className="w-full p-3 border rounded-2xl mt-1 focus:outline-none border-black bg-black text-white"
-            />
+          <div className="flex justify-between items-center mb-4">
+            <label className="flex items-center text-sm">
+              <input type="checkbox" className="mr-2" />
+              Remember me
+            </label>
+            <p className="text-sm text-blue-500 cursor-pointer">Forgot Password?</p>
           </div>
-          <div>
-            <label htmlFor="password" className="block font-semibold text-white">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => (setPassword(e.target.value))}
-              required
-              placeholder="Enter your Password"
-              className="w-full p-3 border rounded-2xl mt-1 focus:outline-none border-black bg-black text-white"
-            />
-          </div>
 
-          <button
-            type="submit"
-            className="w-full p-3 hover:bg-[#2f8a9d] bg-[#36a1b6] text-white rounded-lg uppercase font-semibold  cursor-pointer  transition"
-          >
-            Login
+          <button className="w-full  text-white py-2 rounded mb-2 bg-gray-800">
+            Sign In
           </button>
+          <button className="w-full border border-gray-400 py-2 rounded bg-black">
+            Sign In with Google
+          </button>
+        </div>
 
-
-
-
-        </form>
-
-        <p className="mt-4 text-white text-center">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-white font-semibold hover:underline ">
-            Register
-          </Link>
-        </p>
-
-        <br></br>
-
+        <p className="mt-6 text-xs text-gray-500">© 2024 Banish</p>
       </div>
-      {isLoading && <Loader />}
-    </div>
-  );
-};
 
+      {/* Right Section */}
+      <div className="right w-1/2 hidden md:block">
+        <img
+          src="/logo.png"
+          alt="Login Illustration"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+  )
+}
+
+export default Login
